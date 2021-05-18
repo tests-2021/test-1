@@ -1,4 +1,5 @@
 require 'faraday'
+require 'sinatra/json'
 
 class Calculator
   def call
@@ -7,7 +8,7 @@ class Calculator
 
   def optimized_call
     puts 'optimized_call'
-    [200, {}, ['1']]
+    { song: "Wake me Up" }.to_json
     # process
   end
 

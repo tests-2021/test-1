@@ -44,6 +44,7 @@ GEM
     fiber-local (1.0.0)
     localhost (1.1.7)
     mapping (1.1.1)
+    multi_json (1.15.0)
     multipart-post (2.1.1)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
@@ -70,6 +71,12 @@ GEM
       rack (~> 2.2)
       rack-protection (= 2.1.0)
       tilt (~> 2.0)
+    sinatra-contrib (2.1.0)
+      multi_json
+      mustermann (~> 1.0)
+      rack-protection (= 2.1.0)
+      sinatra (= 2.1.0)
+      tilt (~> 2.0)
     sinatra-cors (1.2.0)
     tilt (2.0.10)
     timers (4.3.3)
@@ -81,6 +88,7 @@ DEPENDENCIES
   falcon
   faraday
   sinatra
+  sinatra-contrib
   sinatra-cors (~> 1.2)
 
 BUNDLED WITH
