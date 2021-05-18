@@ -12,9 +12,9 @@ export class AppComponent {
   ) { }
   title = 'ui';
 
-  calculate() {
-    console.log('calculate')
-    this.appService.get('http://0.0.0.0:9293/calculate')
+  calculate(kind: string) {
+    console.log(kind)
+    this.appService.get('http://0.0.0.0:9293/' + kind)
       .subscribe((data: any) => {
         console.log('data', data)
       },

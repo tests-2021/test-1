@@ -5,6 +5,11 @@ class Calculator
     process
   end
 
+  def optimized_call
+    puts 'optimized_call'
+    process
+  end
+
   private
 
   # Есть три типа эндпоинтов API
