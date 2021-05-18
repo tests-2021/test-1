@@ -42,11 +42,14 @@ class Server < Sinatra::Base
     increment_count(type)
 
     result = Async do |task|
+      started_at = Time.now
       protect_from_overheat(type: type, task: task)
-      log "#{type.to_s.upcase} starts to work"
+      log "#{type.to_s.upcase} starts to work, params: #{params}"
       task.sleep WORK_TIMES[type]
       result = WORK[type].call(params['value'].to_s)
-      log "#{type.to_s.upcase} is done working with #{result}"
+      completed_at = Time.now
+      log "#{type.to_s.upcase} is done working with #{result}, started_at: #{started_at}, completed_at: #{completed_at}"
+      
       result
     end.wait
 
