@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <style>
+    html {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #header {
+      position: relative;
+      height: 50px;
+      margin-top: 15px;
+    }
+
+    .seconds {
+      width: 200px;
+      box-sizing: border-box;
+      border-left: 1px solid;
+      position: absolute;
+      height: 800px;
+      z-index: 10;
+      padding-left: 7px;
+    }
+
+    .row {
+      position: relative;
+      height: 40px;
+      margin-bottom: 3px;
+    }
+
+    .bar {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      padding: 5px 10px;
+      box-sizing: border-box;
+      line-height: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Calculations!</h2>
+
+  <div>
+    <div id="loader">Loading...</div>
+
+    <div id="results">
+      <div id="result"></div>
+      <div id="duration"></div>
+    </div>
+    
+    <div id="header"></div>
+
+    <div id="statistics"></div>
+  </div>
+
+  <script>
+    const url = "http://0.0.0.0:9293/reference"
+    const colorMap = {
+      "a": "#61D836",
+      "b": "#00A2FF",
+      "c": "#FFD932",
+      "r": "#FF644E"
+    }
+    const scale = 200
+
+    const statisticsEl = document.querySelector("#statistics")
+    const loaderEl = document.querySelector("#loader")
+    const headerEl = document.querySelector("#header")
+    const resultEl = document.querySelector("#result")
+    const durationEl = document.querySelector("#duration")
+
+    const buildSecond = (second, scale) => {
+      const divSecondEl = document.createElement("div")
+      divSecondEl.classList.add("seconds")
+      divSecondEl.style.left = second * scale + 'px'
+      divSecondEl.innerText = second
+
+      return divSecondEl
+    }
+
+    const updateHeader = (seconds) => {
+      for (let i = 0; i <= seconds; i++) {
+        const secondEl = buildSecond(i, scale)
+        headerEl.appendChild(secondEl)
+      }
+    }
+
+    const buildRow = (key, data, timeOffset) => {
+      const { started_at, result, kind, duration } = data
+      const width = (duration) * scale
+      const left = (started_at - timeOffset) * scale
+      const color = colorMap[kind]
+      const text = `${ key }: ${duration} sec`
+
+      const barDivEl = document.createElement("div")
+      barDivEl.classList.add("bar")
+      barDivEl.style.width = `${width}px`
+      barDivEl.style.left = `${left}px`
+      barDivEl.style.backgroundColor = color
+      barDivEl.innerText = text
+
+      const rowDivEl = document.createElement("div")
+      rowDivEl.classList.add("row")
+      rowDivEl.appendChild(barDivEl)
+
+      return rowDivEl
+    }
+
+    const updateStatistics = (data) => {
+      const statistics = data.statistics
+      const timeOffset = data.started_at
+
+      Object.keys(statistics).forEach(key => {
+        const data = statistics[key]
+
+        const rowDivEl = buildRow(key, data, timeOffset)
+        statisticsEl.appendChild(rowDivEl)
+      })
+    }
+
+    const updateResult = (resultEl, result) => {
+      resultEl.innerText = `Result: ${result}`
+    }
+
+    const updateDuration = (durationEl, duration) => {
+      durationEl.innerText = `Total duration: ${duration} sec`
+    }
+    
+    fetch(url)
+      .then(data => data.json())
+      .then(data => {
+        loaderEl.classList.add("hidden")
+        const { duration, result } = data
+        const seconds = Math.ceil(duration)
+
+        updateDuration(durationEl, duration)
+        updateResult(resultEl, result)
+        updateHeader(seconds)
+        updateStatistics(data)
+      })
+  </script>
+</body>
+</html>
