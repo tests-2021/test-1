@@ -70,6 +70,7 @@ GEM
       rack (~> 2.2)
       rack-protection (= 2.1.0)
       tilt (~> 2.0)
+    sinatra-cors (1.2.0)
     tilt (2.0.10)
     timers (4.3.3)
 
@@ -80,6 +81,7 @@ DEPENDENCIES
   falcon
   faraday
   sinatra
+  sinatra-cors (~> 1.2)
 
 BUNDLED WITH
    2.2.16

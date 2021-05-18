@@ -7,7 +7,8 @@ class Calculator
 
   def optimized_call
     puts 'optimized_call'
-    process
+    [200, {}, ['1']]
+    # process
   end
 
   private

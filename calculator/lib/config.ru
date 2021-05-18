@@ -1,7 +1,13 @@
 require 'sinatra/base'
+require 'sinatra/cors'
 require_relative 'calculator.rb'
 
 class CalculatorApp < Sinatra::Base
+  register Sinatra::Cors
+
+  set :allow_origin, "http://localhost:4200"
+  set :allow_methods, "GET"
+
   get "/calculate" do
     Calculator.new.optimized_call
   end
