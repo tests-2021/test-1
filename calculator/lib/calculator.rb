@@ -9,6 +9,7 @@ class Calculator
   def optimized_call
     puts 'optimized_call'
     { song: "Wake me Up" }.to_json
+
     # process
   end
 
@@ -26,15 +27,19 @@ class Calculator
   #   - одновременно можно запускать не более одного
   #
   def a(value)
-    Faraday.get("http://server:9292/a?value=#{value}").body
+    parsed_response Faraday.get("http://server:9292/a?value=#{value}").body
   end
 
   def b(value)
-    Faraday.get("http://server:9292/b?value=#{value}").body
+    parsed_response Faraday.get("http://server:9292/b?value=#{value}").body
   end
 
   def c(value)
-    Faraday.get("http://server:9292/c?value=#{value}").body
+    parsed_response Faraday.get("http://server:9292/c?value=#{value}").body
+  end
+
+  def parsed_response response
+    JSON.parse(response)['result']
   end
 
   # Референсное решение, приведённое ниже работает правильно, занимает ~19.5 секунд
@@ -77,7 +82,7 @@ class Calculator
     result = a(c123)
     log "RESULT = #{result}"
 
-    [200, {}, [result]]
+    [200, {}, { result: result }.to_json]
   end
 
   def collect_sorted(arr)
