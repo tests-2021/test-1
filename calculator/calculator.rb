@@ -1,6 +1,8 @@
 require 'faraday'
 
 class Calculator
+  SERVER_HOST = "http://#{ENV['SERVER_HOST']}:#{ENV['SERVER_PORT']}".freeze
+
   def call
     process
   end
@@ -19,15 +21,15 @@ class Calculator
   #   - одновременно можно запускать не более одного
   #
   def a(value)
-    Faraday.get("http://server:9292/a?value=#{value}").body
+    Faraday.get("#{SERVER_HOST}/a?value=#{value}").body
   end
 
   def b(value)
-    Faraday.get("http://server:9292/b?value=#{value}").body
+    Faraday.get("#{SERVER_HOST}/b?value=#{value}").body
   end
 
   def c(value)
-    Faraday.get("http://server:9292/c?value=#{value}").body
+    Faraday.get("#{SERVER_HOST}/c?value=#{value}").body
   end
 
   # Референсное решение, приведённое ниже работает правильно, занимает ~19.5 секунд
