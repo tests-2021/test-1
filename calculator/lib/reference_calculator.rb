@@ -1,6 +1,6 @@
 require 'faraday'
 
-class Calculator
+class ReferenceCalculator
   SERVER_HOST = "http://#{ENV['SERVER_HOST']}:#{ENV['SERVER_PORT']}".freeze
 
   def call

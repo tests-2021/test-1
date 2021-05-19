@@ -5,6 +5,8 @@ RUN apt-get update -qq && apt-get install -y build-essential
 RUN gem update --system && \
     gem install bundler:2.2.16
 
+ENV PORT=9293
+
 ADD Gemfile Gemfile
 ADD Gemfile.lock Gemfile.lock
 
@@ -13,4 +15,4 @@ RUN bundle install --jobs=8
 COPY . .
 
 ENTRYPOINT ["bundle", "exec"]
-CMD ["falcon", "serve", "-c", "config.ru", "--bind", "http://0.0.0.0:9293"]
+CMD ["thin", "start"]
