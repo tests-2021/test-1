@@ -22,3 +22,14 @@ services:
     command: bundle exec falcon serve -c ./config.ru --bind http://0.0.0.0:9293
     depends_on:
       - server
+
+  ui:
+    image: test-1-ui:latest
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - server
+      - calculator
+    ports:
+      - '9294:9294'
