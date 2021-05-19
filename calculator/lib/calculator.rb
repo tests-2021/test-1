@@ -1,16 +1,22 @@
 require 'faraday'
 require 'sinatra/json'
+require 'concurrent'
 
 class Calculator
+  def initialize()
+    super
+    @a = {}
+    @b = {}
+    @c = []
+    @ab = []
+    @c_thread_pool = get_pool(1)
+  end
   def call
     process
   end
 
   def optimized_call
-    puts 'optimized_call'
-    { song: "Wake me Up" }.to_json
-
-    # process
+    optimized_process
   end
 
   private
@@ -83,6 +89,61 @@ class Calculator
     log "RESULT = #{result}"
 
     [200, {}, { result: result }.to_json]
+  end
+
+  def optimized_process()
+    concurrent_exec_a
+    concurrent_exec_b
+  end
+
+  def concurrent_exec_a
+    thread_pool = get_pool(3)
+     ['1','2','3'].map do |first_key|
+      @a[first_key] ||= []
+      ['1','2','3'].map do |second_key|
+        (Concurrent::Promise.new executor: thread_pool do
+          @a[first_key] << self.send('a', first_key + second_key)
+          check_readiness(first_key)
+        end).execute
+      end
+    end
+  end
+
+  def concurrent_exec_b
+    thread_pool = get_pool(2)
+    ['1','2','3'].map do |hash_key|
+      (Concurrent::Future.new executor: thread_pool do
+        @b[hash_key] = self.send('b', hash_key)
+        check_readiness(hash_key)
+      end).execute
+    end
+  end
+
+  def check_readiness(hash_key)
+    if @a[hash_key].length == 3 && @b[hash_key]
+      ab_value = "#{collect_sorted(@a[hash_key])}-#{@b[hash_key]}"
+      @ab << ab_value
+      concurrent_exec_c(ab_value)
+    end
+  end
+
+  def concurrent_exec_c(ab_value)
+    (Concurrent::Future.new executor: @c_thread_pool do
+      @c << self.send('c', ab_value)
+      if @c.size == 3
+        c123 = collect_sorted(@c)
+        result = a(c123)
+        puts "RESULT"
+        puts result
+      end
+    end).execute
+  end
+
+  def get_pool(max_threads)
+    threadPool = Concurrent::ThreadPoolExecutor.new(
+      max_threads: max_threads,
+      overflow_policy: :caller_runs
+    )
   end
 
   def collect_sorted(arr)

@@ -21,7 +21,9 @@ GEM
       async (~> 1.14)
     async-pool (0.3.5)
       async (~> 1.25)
+    benchmark (0.1.1)
     build-environment (1.13.0)
+    concurrent-ruby (1.1.8)
     console (1.11.1)
       fiber-local
     falcon (0.37.3)
@@ -85,6 +87,8 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  benchmark
+  concurrent-ruby (~> 1.0, >= 1.0.5)
   falcon
   faraday
   sinatra
