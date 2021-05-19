@@ -3,7 +3,7 @@ require_relative 'calculator.rb'
 
 class CalculatorApp < Sinatra::Base
   get "/calculate" do
-    Calculator.new.call
+    Calculator.new.acall
   end
 
   get "/reference" do
