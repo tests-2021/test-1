@@ -1,0 +1,33 @@
+#app {
+  max-width: 600px;
+  min-width: 400px;
+}
+.controls {
+  display: flex;
+  justify-content: space-around;
+  padding: 1em;
+}
+.result {
+  text-align: center;
+}
+.timelog li {
+  list-style-type: none;
+}
+.timelog .indent-0 {
+  padding-left: 0;
+}
+.timelog .indent-1 {
+  padding-left: 1em;
+}
+.timelog .indent-2 {
+  padding-left: 2em;
+}
+.timelog .indent-3 {
+  padding-left: 3em;
+}
+.timelog .indent-4 {
+  padding-left: 4em;
+}
+.timelog .indent-5 {
+  padding-left: 5em;
+}
