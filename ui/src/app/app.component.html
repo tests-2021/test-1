@@ -1,0 +1,16 @@
+<div class="main-block">
+  <h1>Calculation methods</h1>
+  <div class="buttons-block">
+    <button class="calculate-button" type="button" name="button" (click)="calculate('reference')">Reference</button>
+    <button class="calculate-button" type="button" name="button" (click)="calculate('calculate')">Optimized</button>
+  </div>
+
+  <div class="messages-block">
+    <h2>Messages:</h2>
+    <ul class="messages-list" *ngIf="messages.length > 0">
+      <li class="message" *ngFor="let message of messages">
+        <p>{{message}}</p>
+      </li>
+    </ul>
+  </div>
+</div>

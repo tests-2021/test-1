@@ -31,5 +31,5 @@ RUN gem update --system && \
 RUN mkdir -p /app
 WORKDIR /app
 
-COPY ./lib/Gemfile /app
+COPY ./lib/Gemfile* /app/
 RUN bundle install

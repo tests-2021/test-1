@@ -19,6 +19,17 @@ services:
       - ./calculator/lib:/app
     ports:
       - '9293:9293'
-    command: bundle exec falcon serve -c ./config.ru --bind http://0.0.0.0:9293
+    command: bundle exec thin -R ./config.ru --threaded  -a 0.0.0.0 -p 9293 start
     depends_on:
       - server
+
+  ui:
+    image: test-1-ui:latest
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - server
+      - calculator
+    ports:
+      - '9294:9294'

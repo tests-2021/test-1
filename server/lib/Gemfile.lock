@@ -39,6 +39,7 @@ GEM
     fiber-local (1.0.0)
     localhost (1.1.7)
     mapping (1.1.1)
+    multi_json (1.15.0)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
     nio4r (2.5.7)
@@ -64,6 +65,12 @@ GEM
       rack (~> 2.2)
       rack-protection (= 2.1.0)
       tilt (~> 2.0)
+    sinatra-contrib (2.1.0)
+      multi_json
+      mustermann (~> 1.0)
+      rack-protection (= 2.1.0)
+      sinatra (= 2.1.0)
+      tilt (~> 2.0)
     tilt (2.0.10)
     timers (4.3.3)
 
@@ -74,6 +81,7 @@ DEPENDENCIES
   async
   falcon
   sinatra
+  sinatra-contrib
 
 BUNDLED WITH
    2.2.16
