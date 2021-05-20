@@ -14,7 +14,7 @@ class CalculatorApp < Sinatra::Base
   set :sockets, []
 
   get "/calculate" do
-    Calculator.new.optimized_call(settings.sockets)
+    Calculator.new.optimized_call
   end
 
   get "/reference" do
@@ -22,10 +22,8 @@ class CalculatorApp < Sinatra::Base
   end
 
   get '/websocket' do
-    if !request.websocket?
-      erb :index
-    else
-      puts 'ssssocket'
+    if request.websocket?
+      puts 'init socket'
       request.websocket do |ws|
         ws.onopen do
           settings.sockets << ws
