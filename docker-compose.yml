@@ -1,24 +1,24 @@
-version: '2.4'
+version: '3'
 
 services:
   server:
-    image: test-1-server:latest
-    stdin_open: true
-    tty: true
-    volumes:
-      - ./server/lib:/app/
-    ports:
-      - '9292:9292'
-    command: bundle exec falcon serve -c ./config.ru --threaded --bind http://0.0.0.0:9292
-
+    build:
+      context: server
   calculator:
-    image: test-1-calculator:latest
-    stdin_open: true
-    tty: true
-    volumes:
-      - ./calculator/lib:/app
-    ports:
-      - '9293:9293'
-    command: bundle exec falcon serve -c ./config.ru --bind http://0.0.0.0:9293
+    build:
+      context: calculator
     depends_on:
       - server
+    environment:
+      SERVER_HOST: server
+      SERVER_PORT: 9292
+  front:
+    build:
+      context: front
+    depends_on:
+      - calculator
+    ports:
+      - "80:3000"
+    environment:
+      CALC_HOST: calculator
+      CALC_PORT: 9293

@@ -1,83 +1,53 @@
-require 'faraday'
+require_relative 'task_queue'
+require_relative 'task'
+
+QUEUES = {
+  a: TaskQueue.new(3),
+  b: TaskQueue.new(2),
+  c: TaskQueue.new(1)
+}
 
 class Calculator
-  def call
-    process
+  def call(&block)
+    a11 = Task.new(:a, 'a11') { 11 }
+    a12 = Task.new(:a, 'a12') { 12 }
+    a13 = Task.new(:a, 'a13') { 13 }
+    b1 = Task.new(:b, 'b1') { 1 }
+
+    c1 = Task.new(:c, 'c1', [a11, a12, a13, b1]) do |a11:, a12:, a13:, b1:|
+      "#{collect_sorted([a11, a12, a13])}-#{b1}"
+    end
+
+    a21 = Task.new(:a, 'a21') { 21 }
+    a22 = Task.new(:a, 'a22') { 22 }
+    a23 = Task.new(:a, 'a23') { 23 }
+    b2 = Task.new(:b, 'b2') { 2 }
+
+    c2 = Task.new(:c, 'c2', [a21, a22, a23, b2]) do |a21:, a22:, a23:, b2:|
+      "#{collect_sorted([a21, a22, a23])}-#{b2}"
+    end
+
+    a31 = Task.new(:a, 'a31') { 31 }
+    a32 = Task.new(:a, 'a32') { 32 }
+    a33 = Task.new(:a, 'a33') { 33 }
+    b3 = Task.new(:b, 'b3') { 3 }
+
+    c3 = Task.new(:c, 'c3', [a31, a32, a33, b3]) do |a31:, a32:, a33:, b3:|
+      "#{collect_sorted([a31, a32, a33])}-#{b3}"
+    end
+
+    a123 = Task.new(:a, 'a123', [c1, c2, c3]) do |c1:, c2:, c3:|
+      collect_sorted([c1, c2, c3])
+    end
+
+    a123.process do |answer, timelog|
+      block.call(answer, timelog)
+    end
   end
 
   private
 
-  # Есть три типа эндпоинтов API
-  # Тип A:
-  #   - работает 1 секунду
-  #   - одновременно можно запускать не более трёх
-  # Тип B:
-  #   - работает 2 секунды
-  #   - одновременно можно запускать не более двух
-  # Тип C:
-  #   - работает 1 секунду
-  #   - одновременно можно запускать не более одного
-  #
-  def a(value)
-    Faraday.get("http://server:9292/a?value=#{value}").body
-  end
-
-  def b(value)
-    Faraday.get("http://server:9292/b?value=#{value}").body
-  end
-
-  def c(value)
-    Faraday.get("http://server:9292/c?value=#{value}").body
-  end
-
-  # Референсное решение, приведённое ниже работает правильно, занимает ~19.5 секунд
-  # Надо сделать в пределах 7 секунд
-  def process()
-    a11 = a(11)
-    a12 = a(12)
-    a13 = a(13)
-    b1 = b(1)
-
-    ab1 = "#{collect_sorted([a11, a12, a13])}-#{b1}"
-    log "AB1 = #{ab1}"
-
-    c1 = c(ab1)
-    log "C1 = #{c1}"
-
-    a21 = a(21)
-    a22 = a(22)
-    a23 = a(23)
-    b2 = b(2)
-
-    ab2 = "#{collect_sorted([a21, a22, a23])}-#{b2}"
-    log "AB2 = #{ab2}"
-
-    c2 = c(ab2)
-    log "C2 = #{c2}"
-
-    a31 = a(31)
-    a32 = a(32)
-    a33 = a(33)
-    b3 = b(3)
-
-    ab3 = "#{collect_sorted([a31, a32, a33])}-#{b3}"
-    log "AB3 = #{ab3}"
-
-    c3 = c(ab3)
-    log "C3 = #{c3}"
-
-    c123 = collect_sorted([c1, c2, c3])
-    result = a(c123)
-    log "RESULT = #{result}"
-
-    [200, {}, [result]]
-  end
-
   def collect_sorted(arr)
     arr.sort.join('-')
-  end
-
-  def log(str)
-    puts str
   end
 end
