@@ -1,6 +1,7 @@
 require 'faraday'
 require 'sinatra/json'
 require 'concurrent'
+require 'date'
 
 class Calculator
   def initialize()
@@ -33,20 +34,21 @@ class Calculator
   #   - работает 1 секунду
   #   - одновременно можно запускать не более одного
   #
-  def a(value)
-    parsed_response Faraday.get("http://server:9292/a?value=#{value}").body
+  def a(value, with_timestamps=false)
+    get_parsed_response('a', value, with_timestamps)
   end
 
-  def b(value)
-    parsed_response Faraday.get("http://server:9292/b?value=#{value}").body
+  def b(value, with_timestamps=false)
+    get_parsed_response('b', value, with_timestamps)
   end
 
-  def c(value)
-    parsed_response Faraday.get("http://server:9292/c?value=#{value}").body
+  def c(value, with_timestamps=false)
+    get_parsed_response('c', value, with_timestamps)
   end
 
-  def parsed_response response
-    JSON.parse(response)['result']
+  def get_parsed_response(kind, value, with_timestamps)
+    parsed = JSON.parse(Faraday.get("http://server:9292/#{kind}?value=#{value}").body)
+    with_timestamps ? parsed : parsed['result']
   end
 
   # Референсное решение, приведённое ниже работает правильно, занимает ~19.5 секунд
@@ -104,9 +106,9 @@ class Calculator
       %w[1 2 3].map do |second_key|
         (Concurrent::Promise.new executor: thread_pool do
           value = first_key + second_key
-          result_a = a(value)
-          @a[first_key] << result_a
-          send_message "A#{value} = #{result_a}"
+          result = a(value, true)
+          @a[first_key] << result['result']
+          result_messages("A#{value}", result['result'], result['start_time'], result['finish_time'])
           check_readiness(first_key)
         end).execute
       end
@@ -117,8 +119,9 @@ class Calculator
     thread_pool = get_pool(2)
     %w[1 2 3].map do |hash_key|
       (Concurrent::Promise.new executor: thread_pool do
-        @b[hash_key] = b(hash_key)
-        send_message "B#{hash_key} = #{@b[hash_key]}"
+        result = b(hash_key, true)
+        @b[hash_key] = result['result']
+        result_messages("B#{hash_key}", result['result'], result['start_time'], result['finish_time'])
         check_readiness(hash_key)
       end).execute
     end
@@ -128,20 +131,19 @@ class Calculator
     if @a[hash_key].length == 3 && @b[hash_key]
       ab_value = "#{collect_sorted(@a[hash_key])}-#{@b[hash_key]}"
       @ab << ab_value
-      send_message "AB#{hash_key} = #{ab_value}"
       concurrent_exec_c(ab_value, hash_key)
     end
   end
 
   def concurrent_exec_c(ab_value, hash_key)
     (Concurrent::Promise.new executor: @c_thread_pool do
-      result_c = c(ab_value)
-      @c << result_c
-      send_message "C#{hash_key} = #{result_c}"
+      result = c(ab_value, true)
+      @c << result['result']
+      result_messages("C#{hash_key}", result['result'], result['start_time'], result['finish_time'])
       if @c.size == 3
         c123 = collect_sorted(@c)
-        result = a(c123)
-        send_message "RESULT=#{result}, Work time = #{Time.now - @start_time}"
+        final_result = a(c123)
+        send_message "RESULT=#{final_result}, Work time(sec.) = #{Time.now - @start_time}"
       end
     end).execute
   end
@@ -153,14 +155,14 @@ class Calculator
     )
   end
 
-  # def result_messages(var_name, result, start, finish, work_time)
-  #   send_message("Kind: #{var_name}")
-  #   send_message("Result: #{result}")
-  #   send_message("Beginning time: #{start}")
-  #   send_message("Completion time: #{finish}")
-  #   send_message("Work time: #{work_time}")
-  #   send_message("")
-  # end
+  def result_messages(var_name, result, start, finish)
+    send_message("Kind: #{var_name}")
+    send_message("Result: #{result}")
+    send_message("Beginning time: #{Time.at(start)}")
+    send_message("Completion time: #{Time.at(finish)}")
+    send_message("Work time(sec.): #{finish - start}")
+    send_message("_")
+  end
 
   def send_message(msg)
     CalculatorApp.settings.sockets.each{|s| s.send(msg) }
