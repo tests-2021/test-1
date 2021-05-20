@@ -12,6 +12,20 @@ export class AppComponent {
   ) { }
   title = 'ui';
 
+  ngOnInit() {
+    this.initWebSocket()
+  }
+
+
+  initWebSocket() {
+    const ws = new WebSocket("ws://0.0.0.0:9293/websocket");
+    ws.onopen = () => {
+      ws.onmessage = (event) => {
+          console.log(event)
+      }
+    }
+  }
+
   calculate(kind: string) {
     console.log(kind)
     this.appService.get('http://0.0.0.0:9293/' + kind)

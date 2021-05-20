@@ -9,14 +9,17 @@ class Calculator
     @b = {}
     @c = []
     @ab = []
+    @sockets = []
     @c_thread_pool = get_pool(1)
   end
   def call
     process
   end
 
-  def optimized_call
+  def optimized_call(sockets)
+    @sockets = sockets
     optimized_process
+    [200, {}, { result: 'ok' }.to_json]
   end
 
   private
@@ -102,7 +105,10 @@ class Calculator
       @a[first_key] ||= []
       ['1','2','3'].map do |second_key|
         (Concurrent::Promise.new executor: thread_pool do
-          @a[first_key] << self.send('a', first_key + second_key)
+          value = first_key + second_key
+          result_a = a(value)
+          @a[first_key] << result_a
+          send_message("a#{value}=#{result_a}")
           check_readiness(first_key)
         end).execute
       end
@@ -112,8 +118,9 @@ class Calculator
   def concurrent_exec_b
     thread_pool = get_pool(2)
     ['1','2','3'].map do |hash_key|
-      (Concurrent::Future.new executor: thread_pool do
-        @b[hash_key] = self.send('b', hash_key)
+      (Concurrent::Promise.new executor: thread_pool do
+        @b[hash_key] = b(hash_key)
+        send_message("b[#{hash_key}]=#{@b[hash_key]}")
         check_readiness(hash_key)
       end).execute
     end
@@ -123,18 +130,21 @@ class Calculator
     if @a[hash_key].length == 3 && @b[hash_key]
       ab_value = "#{collect_sorted(@a[hash_key])}-#{@b[hash_key]}"
       @ab << ab_value
-      concurrent_exec_c(ab_value)
+      concurrent_exec_c(ab_value, hash_key)
     end
   end
 
-  def concurrent_exec_c(ab_value)
-    (Concurrent::Future.new executor: @c_thread_pool do
-      @c << self.send('c', ab_value)
+  def concurrent_exec_c(ab_value, hash_key)
+    (Concurrent::Promise.new executor: @c_thread_pool do
+      result_c = c(ab_value)
+      @c << result_c
+      send_message("c#{hash_key}=#{result}")
       if @c.size == 3
         c123 = collect_sorted(@c)
         result = a(c123)
         puts "RESULT"
         puts result
+        send_message("RESULT=#{result}")
       end
     end).execute
   end
@@ -144,6 +154,10 @@ class Calculator
       max_threads: max_threads,
       overflow_policy: :caller_runs
     )
+  end
+
+  def send_message(msg)
+    EM.next_tick { @sockets.each{|s| s.send(msg) } }
   end
 
   def collect_sorted(arr)

@@ -7,14 +7,14 @@ require 'sinatra-websocket'
 class CalculatorApp < Sinatra::Base
   register Sinatra::Cors
 
-  set :allow_origin, "http://localhost:9294"
+  set :allow_origin, "http://localhost:9294 http://localhost:4200"
   set :allow_methods, "GET"
 
   set :server, 'thin'
   set :sockets, []
 
   get "/calculate" do
-    Calculator.new.optimized_call
+    Calculator.new.optimized_call(settings.sockets)
   end
 
   get "/reference" do
@@ -28,7 +28,6 @@ class CalculatorApp < Sinatra::Base
       puts 'ssssocket'
       request.websocket do |ws|
         ws.onopen do
-          ws.send("Hello World!")
           settings.sockets << ws
         end
         ws.onmessage do |msg|
