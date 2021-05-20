@@ -40,7 +40,9 @@ class Calculator
       collect_sorted([c1, c2, c3])
     end
 
-    a123.process { |answer| block.call(answer) }
+    a123.process do |answer, timelog|
+      block.call(answer, timelog)
+    end
   end
 
   private

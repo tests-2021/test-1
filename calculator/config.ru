@@ -21,13 +21,15 @@ class CalculatorApp < Sinatra::Base
 
     class << settings
       def server_settings
-        { :backend => ThreadedThinBackend }
+        {backend: ThreadedThinBackend}
       end
     end
   end
 
   aget "/calculate" do
-    ::Calculator.new.call { |answer| body answer }
+    ::Calculator.new.call do |answer, timelog|
+      body({answer: answer, timelog: timelog}.to_json)
+    end
   end
 
   get "/reference" do

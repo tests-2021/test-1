@@ -12,6 +12,8 @@ class Task
     @answer = nil
     @value = value
     @on_done = nil
+    @started_at = nil
+    @completed_at = nil
   end
 
   def process(parent = nil, &on_done)
@@ -35,10 +37,22 @@ class Task
 
   def run
     if depends_completed?
+      @started_at = Time.now
       @answer = Faraday.get("#{SERVER_HOST}/#{@type}?value=#{@value.call(depend_hash).to_s}").body
-      @on_done&.call(@answer)
+      @on_done&.call(@answer, timelog)
+      @completed_at = Time.now
       @parent.depend_complete unless @parent.nil?
     end
+  end
+
+  def timelog
+    {
+      name: @name,
+      type: @type,
+      started_at: @started_at,
+      completed_at: @completed_at,
+      depends: @depends.map(&:timelog)
+    }
   end
 
   private

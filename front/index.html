@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis-timeline-graph2d.min.css" integrity="sha512-bbXw0l+sIgE839ldwV4+tEPR4lIelw+Ryj35jm5c6KTgXNJybZJ4DrV+a40zK9kx8pvqNbneG0TGdJBP2jUa4Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis-timeline-graph2d.min.js" integrity="sha512-e7wHjGSu73zD0szO6qaOwIlpco3utvaPyHzjRVsgU34Hw+yzlPXcSC27jlL3ddg0csFbdrx67QWS8pyVVMX10w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<button id="reference">Reference</button>
+<button id="calculate">Calculate</button>
+<p id="answer"></p>
+
+<div id="visualization"></div>
+
+<script>
+    const groups = new vis.DataSet([
+        {id: 0, content: 'a'},
+        {id: 1, content: 'b'},
+        {id: 2, content: 'c'}
+    ]);
+    const container = document.getElementById('visualization');
+    const options = {groupOrder: (a, b) => a.value - b.value, editable: true};
+    const timeline = new vis.Timeline(container);
+    timeline.setOptions(options);
+    timeline.setGroups(groups);
+
+    document.querySelector('#reference').addEventListener('click', () => {
+        fetch(`reference`).then(response => response.text()).then(data => {
+            document.querySelector('#answer').textContent = data;
+        });
+    });
+
+    document.querySelector('#calculate').addEventListener('click', () => {
+        fetch(`calculate`).then(response => response.json()).then(data => {
+            document.querySelector('#answer').textContent = data.answer;
+
+            let items = new vis.DataSet(flat_depends(data.timelog).map(d => {
+                return {
+                    id: d.name,
+                    content: d.name,
+                    start: d.started_at,
+                    end: d.completed_at,
+                    group: {a: 0, b: 1, c: 2}[d.type]
+                };
+            }));
+
+            timeline.setItems(items);
+        });
+    });
+
+
+    function flat_depends(obj) { return [obj, obj.depends.map(d => flat_depends(d))].flat(Infinity) }
+</script>
+</body>
+</html>
