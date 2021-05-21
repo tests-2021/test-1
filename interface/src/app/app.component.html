@@ -1,0 +1,64 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+
+<div style="text-align:center">
+  <h1>
+    Нажмите на кнопку чтобы запустить расчет!
+  </h1>
+
+  <p>
+    Когда расчет закончится (~7 сек.), результат появится ниже
+  </p>
+
+  <button (click)="calculate()">
+    Начать
+  </button>
+
+  <div class="row">
+    <p class="text-primary">
+      Результат: {{calculation.result}}
+    </p>
+  </div>
+
+  <div class="row row-cols-3">
+    <div
+      class="col"
+      *ngFor="let item of calculation.history; let index = index"
+      [ngClass]="{'bg-success': 0 === index % 2}">
+
+      <p class="text-left font-weight-bold">
+        {{index}}
+        Тип: {{item.type}}
+      </p>
+      <p>
+        Результат:
+
+        <span class="text-info">
+          {{item.result}}
+        </span>
+      </p>
+      <p>
+        Начало выполнения запроса:
+
+        <span class="text-warning">
+          {{item.start}}
+        </span>
+      </p>
+      <p>
+        Конец выполнения запроса:
+
+        <span class="text-warning">
+          {{item.finish}}
+        </span>
+      </p>
+      <p>
+        Время выполнения запроса (сек.):
+
+        <span class="text-info">
+          {{item.diff}}
+        </span>
+      </p>
+
+    </div>
+  </div>
+</div>

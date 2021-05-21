@@ -19,15 +19,21 @@ class Calculator
   #   - одновременно можно запускать не более одного
   #
   def a(value)
-    Faraday.get("http://server:9292/a?value=#{value}").body
+    json = JSON.parse Faraday.get("http://server:9292/a?value=#{value}").body
+
+    json['result']
   end
 
   def b(value)
-    Faraday.get("http://server:9292/b?value=#{value}").body
+    json = JSON.parse Faraday.get("http://server:9292/b?value=#{value}").body
+
+    json['result']
   end
 
   def c(value)
-    Faraday.get("http://server:9292/c?value=#{value}").body
+    json = JSON.parse Faraday.get("http://server:9292/c?value=#{value}").body
+
+    json['result']
   end
 
   # Референсное решение, приведённое ниже работает правильно, занимает ~19.5 секунд
