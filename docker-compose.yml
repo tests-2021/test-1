@@ -22,3 +22,15 @@ services:
     command: bundle exec falcon serve -c ./config.ru --bind http://0.0.0.0:9293
     depends_on:
       - server
+
+  fast-calculator:
+    image: test-1-fast-calculator:latest
+    stdin_open: true
+    tty: true
+#     volumes:
+#       - ./fast-calculator:/app
+    ports:
+      - '3000:3000'
+    command: rails s -b0
+    depends_on:
+      - server

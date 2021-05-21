@@ -1,0 +1,12 @@
+<h1>Calculator</h1>
+<div>
+  <div id="calculate_log">
+  </div>
+  <%#= link_to "Calculate", calculator_calculate_path, class: "btn btn-primary" %>
+  <%#= button_tag "Calculate", type: 'button', onclick: "window.Log.send({time: '010101', info: 'stage 1'})", class: 'btn btn-default' %>
+  <%= button_tag "Calculate", type: 'button', onclick: "
+    window.ID=Math.floor(Math.random() * 10000000000)
+    window.Log.send({run: 'calculate', id: window.ID})
+    document.querySelector('#calculate_log').innerHTML = ''
+  ", class: 'btn btn-default' %>
+</div>

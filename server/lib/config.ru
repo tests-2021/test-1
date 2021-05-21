@@ -2,6 +2,7 @@
 
 # Middleware that responds to incoming requests:
 require 'sinatra/base'
+require 'sinatra/json'
 require 'async'
 class Server < Sinatra::Base
   OVERHEAT_LIMITS = { a: 3, b: 2, c: 1 }.freeze
@@ -42,16 +43,18 @@ class Server < Sinatra::Base
     increment_count(type)
 
     result = Async do |task|
+      started_at = Time.now.utc.strftime("%F %T %z")
       protect_from_overheat(type: type, task: task)
       log "#{type.to_s.upcase} starts to work"
       task.sleep WORK_TIMES[type]
       result = WORK[type].call(params['value'].to_s)
+      completed_at = Time.now.utc.strftime("%F %T %z")
       log "#{type.to_s.upcase} is done working with #{result}"
-      result
+      { type: type.to_s.upcase, result: result, started_at: started_at, completed_at: completed_at }
     end.wait
 
     decrement_count(type)
-    [200, {}, [result]]
+    json(result)
   end
 
   def increment_count(type)
