@@ -27,6 +27,7 @@ services:
     image: test-1-interface:latest
     volumes:
       - ./interface:/app
+      - /app/node_modules
     ports:
       - '4200:4200'
     command: ng serve --host 0.0.0.0 --port 4200
