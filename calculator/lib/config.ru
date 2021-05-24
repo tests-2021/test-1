@@ -1,16 +1,28 @@
 require 'sinatra/base'
-require_relative 'calculator.rb'
+require 'sinatra/cors'
+require 'json'
+
+require_relative 'calculator'
+require_relative 'async_calculator'
+require_relative 'async_requester'
 
 class CalculatorApp < Sinatra::Base
-  get "/calculate" do
-    Calculator.new.call
+  register Sinatra::Cors
+
+  set :allow_origin, 'http://localhost:4200'
+  set :allow_methods, 'GET, HEAD, POST, OPTIONS'
+
+  get '/calculate' do
+    content_type :json
+
+    AsyncCalculator.new.call.to_json
   end
 
-  get "/reference" do
+  get '/reference' do
     Calculator.new.call
   end
 end
 
 # Build the middleware stack:
 use CalculatorApp # Then, it will get to Sinatra.
-run lambda {|env| [404, {}, []]} # Bottom of the stack, give 404.
+run ->(_env) { [404, {}, []] } # Bottom of the stack, give 404.

@@ -22,6 +22,7 @@ GEM
     async-pool (0.3.5)
       async (~> 1.25)
     build-environment (1.13.0)
+    concurrent-ruby (1.1.8)
     console (1.11.1)
       fiber-local
     falcon (0.37.3)
@@ -70,6 +71,8 @@ GEM
       rack (~> 2.2)
       rack-protection (= 2.1.0)
       tilt (~> 2.0)
+    sinatra-cors (1.2.0)
+    sinatra-cross_origin (0.4.0)
     tilt (2.0.10)
     timers (4.3.3)
 
@@ -77,9 +80,12 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  concurrent-ruby
   falcon
   faraday
   sinatra
+  sinatra-cors
+  sinatra-cross_origin
 
 BUNDLED WITH
    2.2.16

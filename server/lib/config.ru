@@ -1,15 +1,17 @@
 # falcon serve -c config.ru
 
-# Middleware that responds to incoming requests:
 require 'sinatra/base'
 require 'async'
+require 'json'
+
+# Middleware that responds to incoming requests:
 class Server < Sinatra::Base
   OVERHEAT_LIMITS = { a: 3, b: 2, c: 1 }.freeze
   WORK_TIMES = { a: 1, b: 2, c: 1 }.freeze
   WORK = {
     a: ->(value) { Digest::MD5.hexdigest(value) },
     b: ->(value) { Digest::SHA256.hexdigest(value) },
-    c: ->(value) { Digest::SHA512.hexdigest(value) },
+    c: ->(value) { Digest::SHA512.hexdigest(value) }
   }
   OVERHEAT_PENALTY = 10 # seconds
 
@@ -18,17 +20,21 @@ class Server < Sinatra::Base
     setup
   end
 
+  before do
+    content_type :json
+  end
+
   # GET /a?value=1
-  get "/a" do
-    process(:a, params)
+  get '/a' do
+    process(:a, params).to_json
   end
 
-  get "/b" do
-    process(:b, params)
+  get '/b' do
+    process(:b, params).to_json
   end
 
-  get "/c" do
-    process(:c, params)
+  get '/c' do
+    process(:c, params).to_json
   end
 
   private
@@ -39,24 +45,37 @@ class Server < Sinatra::Base
   end
 
   def process(type, params)
+    start = Time.now
     increment_count(type)
 
-    result = Async do |task|
+    result = async_result(type, params).wait
+
+    decrement_count(type)
+    finish = Time.now
+
+    {
+      result: result,
+      type: type,
+      start: start,
+      finish: finish,
+      diff: (finish - start).round(2)
+    }
+  end
+
+  def increment_count(type)
+    @@mutex.synchronize do
+      @@count[type] += 1
+    end
+  end
+
+  def async_result(type, params)
+    Async do |task|
       protect_from_overheat(type: type, task: task)
       log "#{type.to_s.upcase} starts to work"
       task.sleep WORK_TIMES[type]
       result = WORK[type].call(params['value'].to_s)
       log "#{type.to_s.upcase} is done working with #{result}"
       result
-    end.wait
-
-    decrement_count(type)
-    [200, {}, [result]]
-  end
-
-  def increment_count(type)
-    @@mutex.synchronize do
-      @@count[type] += 1
     end
   end
 
@@ -67,13 +86,13 @@ class Server < Sinatra::Base
   end
 
   def protect_from_overheat(type:, task:)
-    if @@count[type] > OVERHEAT_LIMITS[type]
-      log "Counters: #{@@count}"
-      log "OVERHEAT IN #{type}!!!"
-      log "SLEEP FOR #{OVERHEAT_PENALTY} SECONDS TO COOL DOWN!"
-      task.sleep OVERHEAT_PENALTY
-      log "Counters: #{@@count}"
-    end
+    return unless @@count[type] > OVERHEAT_LIMITS[type]
+
+    log "Counters: #{@@count}"
+    log "OVERHEAT IN #{type}!!!"
+    log "SLEEP FOR #{OVERHEAT_PENALTY} SECONDS TO COOL DOWN!"
+    task.sleep OVERHEAT_PENALTY
+    log "Counters: #{@@count}"
   end
 
   def log(msg)
@@ -83,4 +102,4 @@ end
 
 # Build the middleware stack:
 use Server # Then, it will get to Sinatra.
-run lambda {|env| [404, {}, []]} # Bottom of the stack, give 404.
+run ->(_env) { [404, {}, []] } # Bottom of the stack, give 404.

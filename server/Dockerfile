@@ -32,4 +32,5 @@ RUN mkdir -p /app
 WORKDIR /app
 
 COPY ./lib/Gemfile /app
+COPY ./lib/Gemfile.lock /app
 RUN bundle install
